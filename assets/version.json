@@ -1,0 +1,15 @@
+{
+  "version": "M7A26V1", 
+  "buildDate": "2026-04-05T11:00:00Z",
+  "changelog": [
+    {
+      "version": "M7A26V1",
+      "date": "2026-04-05",
+      "changes": [
+       "Migración completa a rutas locales para APK",
+       "Optimización de Service Worker (Caché dinámica de videos)",
+       "Corrección de Manifiesto para modo standalone"
+      ]
+    }
+  ]
+}

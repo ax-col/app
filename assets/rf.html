@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redireccionando... - AX PROYECT</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<script>
+    const SUPABASE_URL = "https://bkgklfnwqunogtqclrho.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_O0MJd3GpF_oL7TVdLdUYEQ_mwCy81A-"; 
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function procesarRedireccionRaiz() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const codigoBuscado = urlParams.get('id');
+
+        if (codigoBuscado) {
+            // Ocultamos la pantalla mientras carga
+            document.documentElement.style.display = 'none';
+
+            const { data, error } = await supabaseClient
+                .from('enlaces')
+                .select('url_larga')
+                .eq('codigo', codigoBuscado)
+                .single();
+
+            if (data && data.url_larga) {
+                window.location.href = data.url_larga;
+            } else {
+                document.documentElement.style.display = 'block';
+                alert("El enlace no existe en AX PROYECT.");
+            }
+        } else {
+            // Si entran a la raíz limpia sin ?id=, los mandamos al panel
+            window.location.href = "https://ax-col.github.io/ax/curts/";
+        }
+    }
+    
+    procesarRedireccionRaiz();
+</script>
+</body>
+</html>
