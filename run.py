@@ -55,12 +55,12 @@ def obtener_siguiente_version(propietario, repo, token):
 
 def inyectar_version_en_js(nueva_version):
     """
-    Busca de forma automática la constante VERSION_ACTUAL_APK en el script.js web y la actualiza
+    Busca de forma automática la constante VERSION_INSTALADA en assets/actualizador.js y la actualiza
     """
     rutas_posibles = [
-        "script.js",
-        os.path.join("..", "ax", "script.js"),
-        os.path.join("ax", "script.js")
+        os.path.join("assets", "actualizador.js"),
+        os.path.join("..", "app", "assets", "actualizador.js"),
+        "actualizador.js"
     ]
     
     ruta_js = None
@@ -70,27 +70,28 @@ def inyectar_version_en_js(nueva_version):
             break
 
     if not ruta_js:
-        print("⚠️ Alerta: No se encontró el archivo 'script.js' en las rutas mapeadas para auto-inyectar la versión.")
+        print("⚠️ Alerta: No se encontró 'actualizador.js' para auto-inyectar la versión.")
         return False
 
     try:
         with open(ruta_js, "r", encoding="utf-8") as f:
             contenido = f.read()
         
+        # Cambia la constante VERSION_INSTALADA por el número nuevo calculado
         contenido_modificado = re.sub(
-            r'const VERSION_ACTUAL_APK = "[^"]+";', 
-            f'const VERSION_ACTUAL_APK = "{nueva_version}";', 
+            r'const VERSION_INSTALADA = "[^"]+";', 
+            f'const VERSION_INSTALADA = "{nueva_version}";', 
             contenido
         )
         
         with open(ruta_js, "w", encoding="utf-8") as f:
             f.write(contenido_modificado)
-        print(f"📝 Inteligenia AX: '{ruta_js}' actualizado automáticamente a {nueva_version}")
+        print(f"📝 Inteligencia AX: '{ruta_js}' actualizado automáticamente a {nueva_version}")
         return True
     except Exception as e:
-        print(f"❌ Error crítico al escribir en script.js: {e}")
+        print(f"❌ Error crítico al escribir en actualizador.js: {e}")
         return False
-
+        
 # ========================================================
 # AGENTE DE LANZAMIENTOS AUTOMÁTICOS (RELEASE API)
 # ========================================================
