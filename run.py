@@ -92,7 +92,7 @@ def inyectar_version_en_js(nueva_version):
         return False
 
 # ========================================================
-# AGENTE DE LANZAMIENTOS AUTOMÁTICOS (RELEASE API)
+# AGENTE DE LANZAMIENTOS AUTOMÁTIMOS (RELEASE API)
 # ========================================================
 def publicar_release_github(ruta_apk, version_tag, commit_msg, token):
     REPO_PROPIETARIO = "ax-col"
@@ -220,19 +220,27 @@ def main():
             if ejecutar_comando("git add ."):
                 print("💬 Guardando historial local (Commit)...")
                 time.sleep(1)
-                if ejecutar_comando(f'git commit -m "{msg}"'):
-                    print("🚀 Subiendo actualizaciones a la rama principal de GitHub...")
+                
+                # TOLERANCIA DE CAMBIOS: Ejecutamos el commit manualmente para capturar si está limpio
+                resultado_commit = subprocess.run(f'git commit -m "{msg}"', shell=True, capture_output=True, text=True)
+                
+                if "nothing to commit" in resultado_commit.stdout or resultado_commit.returncode == 0:
+                    print("✨ El repositorio local ya está al día con los cambios de código.")
+                    print("🚀 Asegurando sincronización con GitHub...")
                     time.sleep(1.5)
-                    if ejecutar_comando("git push origin main"):
-                        
-                        # 🛠️ CORRECCIÓN DE RUTA: Apunta directamente a base.apk en la carpeta actual
-                        ruta_del_apk = "base.apk" 
-                        
-                        if os.path.exists(ruta_del_apk):
-                            publicar_release_github(ruta_del_apk, version_tag, msg, GITHUB_TOKEN)
-                        else:
-                            print(f"\n⚠️ Alerta: No se encontró el archivo físico '{ruta_del_apk}' en esta carpeta.")
-                            print("Asegúrate de ejecutar la Opción 1 (Compilar) antes de lanzar la actualización.")
+                    
+                    # Ejecutamos el push sin importar qué
+                    ejecutar_comando("git push origin main")
+                    
+                    # Despachamos el APK directo a las Releases
+                    ruta_del_apk = "base.apk" 
+                    if os.path.exists(ruta_del_apk):
+                        publicar_release_github(ruta_del_apk, version_tag, msg, GITHUB_TOKEN)
+                    else:
+                        print(f"\n⚠️ Alerta: No se encontró el archivo físico '{ruta_del_apk}' en esta carpeta.")
+                        print("Asegúrate de ejecutar la Opción 1 (Compilar) antes de lanzar la actualización.")
+                else:
+                    print(f"❌ Error real en el commit: {resultado_commit.stderr}")
                             
             input("\nPresiona Enter para volver...")
         elif opc == "5":
