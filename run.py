@@ -57,7 +57,6 @@ def inyectar_version_en_js(nueva_version):
     """
     Busca de forma automática la constante VERSION_ACTUAL_APK en el script.js web y la actualiza
     """
-    # Verificamos rutas posibles (si estamos parados en github/app, sube un nivel a github/ax/script.js)
     rutas_posibles = [
         "script.js",
         os.path.join("..", "ax", "script.js"),
@@ -78,7 +77,6 @@ def inyectar_version_en_js(nueva_version):
         with open(ruta_js, "r", encoding="utf-8") as f:
             contenido = f.read()
         
-        # Reemplazo exacto por expresión regular
         contenido_modificado = re.sub(
             r'const VERSION_ACTUAL_APK = "[^"]+";', 
             f'const VERSION_ACTUAL_APK = "{nueva_version}";', 
@@ -87,7 +85,7 @@ def inyectar_version_en_js(nueva_version):
         
         with open(ruta_js, "w", encoding="utf-8") as f:
             f.write(contenido_modificado)
-        print(f"📝 Inteligencia AX: '{ruta_js}' actualizado automáticamente a {nueva_version}")
+        print(f"📝 Inteligenia AX: '{ruta_js}' actualizado automáticamente a {nueva_version}")
         return True
     except Exception as e:
         print(f"❌ Error crítico al escribir en script.js: {e}")
@@ -125,15 +123,16 @@ def publicar_release_github(ruta_apk, version_tag, commit_msg, token):
         release_data = response.json()
         upload_url = release_data['upload_url'].split('{')[0]
         
-        nombre_archivo = os.path.basename(ruta_apk)
-        url_subida_final = f"{upload_url}?name={nombre_archivo}"
+        # Renombramos dinámicamente el archivo en la nube de GitHub para que se vea profesional
+        nombre_publico_apk = f"AX_{version_tag}.apk"
+        url_subida_final = f"{upload_url}?name={nombre_publico_apk}"
         
         headers_subida = {
             "Authorization": f"token {token}",
             "Content-Type": "application/vnd.android.package-archive"
         }
         
-        print(f"📦 Transmitiendo binario {nombre_archivo} a producción...")
+        print(f"📦 Transmitiendo binario local a producción como '{nombre_publico_apk}'...")
         with open(ruta_apk, 'rb') as apk_file:
             response_upload = requests.post(url_subida_final, data=apk_file, headers=headers_subida)
             
@@ -150,16 +149,17 @@ def publicar_release_github(ruta_apk, version_tag, commit_msg, token):
 
 def main():
     verificar_url_app()
-    # Detectamos automáticamente si estamos en celular o PC por la ruta actual
     en_celular = "storage" in os.getcwd() or "emulated" in os.getcwd()
     
-    # Carga segura del Token desde un archivo local para burlar el bloqueo de GitHub Push Protection
+    # Carga segura del Token desde archivo externo para evadir el Push Protection
+    GITHUB_TOKEN = ""
     ruta_token = "token.txt"
     if os.path.exists(ruta_token):
         with open(ruta_token, "r", encoding="utf-8") as tf:
             GITHUB_TOKEN = tf.read().strip()
     else:
-        print("❌ Error crítico: Crea el archivo 'token.txt' con tu clave de GitHub adentro.")
+        print("❌ Error crítico: No se encontró el archivo 'token.txt'.")
+        print("Por favor créalo en esta misma carpeta y pega tu token clásico de GitHub adentro.")
         input("\nPresiona Enter para salir...")
         return
 
@@ -225,14 +225,14 @@ def main():
                     time.sleep(1.5)
                     if ejecutar_comando("git push origin main"):
                         
-                        # Buscador estático del APK generado por tu compilar.sh
-                        ruta_del_apk = "bin/AX v1.1.apk" 
+                        # 🛠️ CORRECCIÓN DE RUTA: Apunta directamente a base.apk en la carpeta actual
+                        ruta_del_apk = "base.apk" 
                         
                         if os.path.exists(ruta_del_apk):
                             publicar_release_github(ruta_del_apk, version_tag, msg, GITHUB_TOKEN)
                         else:
-                            print(f"\n⚠️ Alerta: No se encontró el archivo físico en '{ruta_del_apk}'.")
-                            print("Sube el APK manualmente o verifica el nombre que escupe tu entorno.")
+                            print(f"\n⚠️ Alerta: No se encontró el archivo físico '{ruta_del_apk}' en esta carpeta.")
+                            print("Asegúrate de ejecutar la Opción 1 (Compilar) antes de lanzar la actualización.")
                             
             input("\nPresiona Enter para volver...")
         elif opc == "5":
