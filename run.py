@@ -92,7 +92,7 @@ def inyectar_version_en_js(nueva_version):
         return False
 
 # ========================================================
-# AGENTE DE LANZAMIENTOS AUTOMÁTIMOS (RELEASE API)
+# AGENTE DE LANZAMIENTOS AUTOMÁTICOS (RELEASE API)
 # ========================================================
 def publicar_release_github(ruta_apk, version_tag, commit_msg, token):
     REPO_PROPIETARIO = "ax-col"
@@ -123,7 +123,6 @@ def publicar_release_github(ruta_apk, version_tag, commit_msg, token):
         release_data = response.json()
         upload_url = release_data['upload_url'].split('{')[0]
         
-        # Renombramos dinámicamente el archivo en la nube de GitHub para que se vea profesional
         nombre_publico_apk = f"AX_{version_tag}.apk"
         url_subida_final = f"{upload_url}?name={nombre_publico_apk}"
         
@@ -151,15 +150,20 @@ def main():
     verificar_url_app()
     en_celular = "storage" in os.getcwd() or "emulated" in os.getcwd()
     
-    # Carga segura del Token desde archivo externo para evadir el Push Protection
+    # 🛡️ AJUSTE SEGURO: El script sube un nivel ('..') para buscar el token fuera de 'app/'
     GITHUB_TOKEN = ""
-    ruta_token = "token.txt"
+    ruta_token = os.path.join("..", "token.txt")
+    
+    # Respaldo por si se ejecuta parándose desde una ruta diferente
+    if not os.path.exists(ruta_token):
+        ruta_token = "token.txt"
+        
     if os.path.exists(ruta_token):
         with open(ruta_token, "r", encoding="utf-8") as tf:
             GITHUB_TOKEN = tf.read().strip()
     else:
-        print("❌ Error crítico: No se encontró el archivo 'token.txt'.")
-        print("Por favor créalo en esta misma carpeta y pega tu token clásico de GitHub adentro.")
+        print("❌ Error crítico: No se encontró el archivo 'token.txt' en la carpeta raíz externa.")
+        print("Mueve el archivo a 'github/token.txt' e intenta de nuevo.")
         input("\nPresiona Enter para salir...")
         return
 
@@ -221,7 +225,6 @@ def main():
                 print("💬 Guardando historial local (Commit)...")
                 time.sleep(1)
                 
-                # TOLERANCIA DE CAMBIOS: Ejecutamos el commit manualmente para capturar si está limpio
                 resultado_commit = subprocess.run(f'git commit -m "{msg}"', shell=True, capture_output=True, text=True)
                 
                 if "nothing to commit" in resultado_commit.stdout or resultado_commit.returncode == 0:
@@ -229,10 +232,8 @@ def main():
                     print("🚀 Asegurando sincronización con GitHub...")
                     time.sleep(1.5)
                     
-                    # Ejecutamos el push sin importar qué
                     ejecutar_comando("git push origin main")
                     
-                    # Despachamos el APK directo a las Releases
                     ruta_del_apk = "base.apk" 
                     if os.path.exists(ruta_del_apk):
                         publicar_release_github(ruta_del_apk, version_tag, msg, GITHUB_TOKEN)
