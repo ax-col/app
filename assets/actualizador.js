@@ -1,7 +1,7 @@
 // app/assets/actualizador.js
 
 // Mantén aquí la versión v1.2 para que detecte la v1.3 de GitHub en la prueba
-const VERSION_INSTALADA = "v1.4"; 
+const VERSION_INSTALADA = "v1.5"; 
 const REPO_USER = "ax-col";
 const REPO_NAME = "app";
 
