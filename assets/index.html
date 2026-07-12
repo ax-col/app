@@ -3,7 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-
+<script>
+    (function() {
+        const isGithub = window.location.hostname.includes("github.io");
+        // Forzamos la ruta correcta con o sin slash final
+        const scriptPath = isGithub ? "/app/analytics-loader.js" : "./analytics-loader.js";
+        
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = scriptPath;
+        document.head.appendChild(script);
+    })();
+</script>
 <title>AX PRINCIPAL</title>
 <meta name="description" content="AX alojado en GitHub Pages.">
 
