@@ -1,38 +1,50 @@
 // app/assets/actualizador.js
 
-// Esta constante la maneja run.py automáticamente en cada despliegue
-const VERSION_INSTALADA = "v1.3"; 
+// Mantén aquí la versión v1.2 para que detecte la v1.3 de GitHub en la prueba
+const VERSION_INSTALADA = "v1.4"; 
 const REPO_USER = "ax-col";
 const REPO_NAME = "app";
 
 async function chequearActualizacionesAX() {
-    const url = `https://api.github.com/repos/${REPO_USER}/${REPO_NAME}/releases/latest`;
+    // Rompemos la caché del navegador del celular agregando un timestamp único
+    const url = `https://api.github.com/repos/${REPO_USER}/${REPO_NAME}/releases/latest?nocache=${new Date().getTime()}`;
     
     try {
+        console.log("AX Shield: Iniciando consulta de actualización...");
         const response = await fetch(url);
-        if (!response.ok) return;
+        
+        if (!response.ok) {
+            console.log("AX Shield: Error de conexión con GitHub API. Status: " + response.status);
+            return;
+        }
         
         const data = await response.json();
-        const ultimaVersionNube = data.tag_name; // Ej: "v1.2"
-        const urlApk = data.assets[0].browser_download_url;
+        const ultimaVersionNube = data.tag_name; 
+        const urlApk = (data.assets && data.assets.length > 0) 
+            ? data.assets[0].browser_download_url 
+            : `https://github.com/${REPO_USER}/${REPO_NAME}/releases`;
 
-        // Si la versión de GitHub es diferente a la instalada
+        console.log(`AX Shield: Comparando versión Local (${VERSION_INSTALADA}) con Nube (${ultimaVersionNube})`);
+
         if (ultimaVersionNube !== VERSION_INSTALADA) {
             
-            // 1. INTENTO DE PUSH NATIVO (Por si tienes puente nativo con Python)
-            if (window.AndroidBridge && window.AndroidBridge.lanzarPush) {
-                window.AndroidBridge.lanzarPush(ultimaVersionNube, urlApk);
-            }
-
-            // 2. DISPARAR ALERTA VISUAL EN LA WEB (Interior)
+            // 🚨 ALERTA NATIVA: Si el script se ejecuta, este alert saltará directo en la pantalla de Android
+            alert(`🔄 Actualización AX\n\nDetectada: ${ultimaVersionNube}\nInstalada: ${VERSION_INSTALADA}\n\nPresiona OK para habilitar el banner.`);
+            
+            // Creación del banner estándar
             crearAlertaVisualInterna(ultimaVersionNube, urlApk);
         }
     } catch (error) {
-        console.error("Error al comprobar la actualización en GitHub:", error);
+        console.error("AX Shield: Error crítico en el proceso fetch:", error);
     }
 }
 
 function crearAlertaVisualInterna(version, link) {
+    if (!document.body) {
+        setTimeout(() => crearAlertaVisualInterna(version, link), 300);
+        return;
+    }
+
     if (document.getElementById('alerta-actualizacion-ax')) return;
 
     const banner = document.createElement('div');
@@ -73,7 +85,11 @@ function crearAlertaVisualInterna(version, link) {
     });
 }
 
-// Ejecutar automáticamente al abrir la aplicación
-window.addEventListener('DOMContentLoaded', () => {
+// Aseguramos tres disparadores de carga para que el teléfono no ignore el inicio del script
+if (document.readyState === "complete" || document.readyState === "interactive") {
     setTimeout(chequearActualizacionesAX, 2000);
-});
+} else {
+    window.addEventListener('load', () => {
+        setTimeout(chequearActualizacionesAX, 2000);
+    });
+}
