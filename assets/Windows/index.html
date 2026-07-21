@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activar Windows</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Favicon principal -->
-<link rel="icon" href="/ax/favicon.ico" type="image/x-icon">
-
-<!-- PWA / Android -->
-<link rel="icon" sizes="192x192" href="/ax/png-principal/icon-192x192.png">
-<link rel="icon" sizes="512x512" href="/ax/png-principal/icon-512x512.png">
-
-<!-- Apple -->
-<link rel="apple-touch-icon" href="/ax/png-principal/icon-192x192.png">
-
-<!-- Open Graph mínimo -->
-<meta property="og:image"
-      content="https://raw.githubusercontent.com/ax-col/ax/main/png-principal/icon-512x512.png">
+<script>
+    (function() {
+        const isGithub = window.location.hostname.includes("github.io");
+        // CORRECCIÓN: En GitHub va a la raíz absoluta, en local sube un nivel (../) para salir de la subcarpeta Windows/
+        const scriptPath = isGithub ? "/ax/analytics-loader.js" : "../analytics-loader.js";
+        
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = scriptPath;
+        document.head.appendChild(script);
+    })();
+</script>
 </head>
 <body>
     <div class="content">
@@ -36,8 +35,6 @@
         <h3>Opcion 2</h3>
         <p class="footer">wmic path SoftwareLicensingService get OA3xOriginalProductKey</p>
         <h4>msg * "https//viwnet.github.io/windows"</h4>
-        
     </div>
-    
 </body>
 </html>
